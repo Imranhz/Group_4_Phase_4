@@ -1,4 +1,6 @@
-namespace Group4Flight.Models
+using Group4Flight.Models.DomainModels;
+
+namespace Group4Flight.Models.ViewModels
 {
     public class FlightViewModel
     {

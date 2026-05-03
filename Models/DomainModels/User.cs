@@ -1,4 +1,4 @@
-namespace Group4Flight.Models
+namespace Group4Flight.Models.DomainModels
 {
     public class User
     {

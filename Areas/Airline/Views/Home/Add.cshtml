@@ -1,7 +1,7 @@
-@model Group4Flight.Models.Flight
+@model Flight
 @{
     ViewData["Title"] = "Add Flight";
-    var airlines = (List<Group4Flight.Models.Airline>)(ViewBag.Airlines ?? new List<Group4Flight.Models.Airline>());
+    var airlines = (List<Airline>)(ViewBag.Airlines ?? new List<Airline>());
 }
 
 <div class="row justify-content-center">
@@ -61,7 +61,7 @@
                             <label asp-for="CabinType" class="form-label fw-semibold"></label>
                             <select asp-for="CabinType" class="form-select">
                                 <option value="">-- Select Cabin --</option>
-                                @foreach (var cabin in Group4Flight.Models.FlightViewModel.CabinTypes)
+                                @foreach (var cabin in FlightViewModel.CabinTypes)
                                 {
                                     <option value="@cabin">@cabin</option>
                                 }
@@ -72,7 +72,7 @@
                             <label asp-for="AircraftType" class="form-label fw-semibold"></label>
                             <select asp-for="AircraftType" class="form-select">
                                 <option value="">-- Select Aircraft --</option>
-                                @foreach (var aircraft in Group4Flight.Models.FlightViewModel.AircraftTypes)
+                                @foreach (var aircraft in FlightViewModel.AircraftTypes)
                                 {
                                     <option value="@aircraft">@aircraft</option>
                                 }

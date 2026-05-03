@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Group4Flight.Models
+namespace Group4Flight.Models.Utilities
 {
     public class FlightCookie
     {

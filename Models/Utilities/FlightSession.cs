@@ -1,4 +1,7 @@
-namespace Group4Flight.Models
+using Group4Flight.Models.ExtensionMethods;
+using Group4Flight.Models.ViewModels;
+
+namespace Group4Flight.Models.Utilities
 {
     public class FlightSession
     {

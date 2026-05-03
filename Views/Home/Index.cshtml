@@ -1,4 +1,4 @@
-@model Group4Flight.Models.FlightViewModel
+@model FlightViewModel
 @{
     ViewData["Title"] = "Search Flights";
 }
@@ -45,7 +45,7 @@
                         <label class="form-label fw-semibold">Cabin Type</label>
                         <select name="CabinType" class="form-select">
                             <option value="">All Cabins</option>
-                            @foreach (var cabin in Group4Flight.Models.FlightViewModel.CabinTypes)
+                            @foreach (var cabin in FlightViewModel.CabinTypes)
                             {
                                 <option value="@cabin" selected="@(Model.CabinType == cabin ? "selected" : null)">@cabin</option>
                             }

@@ -1,4 +1,6 @@
-using Group4Flight.Models;
+using AirlineModel = Group4Flight.Models.DomainModels.Airline;
+using Group4Flight.Models.DataLayer.Repositories;
+using Group4Flight.Models.DomainModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,18 +15,24 @@ namespace Group4Flight.Areas.Airline.Controllers
         // the database (per Phase 3 Technical Requirement #1).
         private const string RemoteDateCheckKey = "RemoteDateCheck";
 
-        private readonly FlightContext _context;
+        private readonly IRepository<Flight> _flightRepository;
+        private readonly IRepository<AirlineModel> _airlineRepository;
+        private readonly IRepository<Reservation> _reservationRepository;
 
-        public HomeController(FlightContext context)
+        public HomeController(IRepository<Flight> flightRepository,
+                              IRepository<AirlineModel> airlineRepository,
+                              IRepository<Reservation> reservationRepository)
         {
-            _context = context;
+            _flightRepository = flightRepository;
+            _airlineRepository = airlineRepository;
+            _reservationRepository = reservationRepository;
         }
 
         // GET: /Airline/Home/Index
         [HttpGet]
         public IActionResult Index()
         {
-            var flights = _context.Flights.Include(f => f.Airline)
+            var flights = _flightRepository.GetAll().Include(f => f.Airline)
                                           .OrderBy(f => f.Date)
                                           .ToList()
                                           .OrderBy(f => f.Date).ThenBy(f => f.DepartureTime)
@@ -36,7 +44,7 @@ namespace Group4Flight.Areas.Airline.Controllers
         [HttpGet]
         public IActionResult Add()
         {
-            ViewBag.Airlines = _context.Airlines.ToList();
+            ViewBag.Airlines = _airlineRepository.GetAll().ToList();
             return View(new Flight());
         }
 
@@ -57,13 +65,13 @@ namespace Group4Flight.Areas.Airline.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Flights.Add(flight);
-                _context.SaveChanges();
+                _flightRepository.Add(flight);
+                _flightRepository.SaveChanges();
                 TempData["Message"] = $"Flight {flight.FlightCode} added successfully!";
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Airlines = _context.Airlines.ToList();
+            ViewBag.Airlines = _airlineRepository.GetAll().ToList();
             return View(flight);
         }
 
@@ -71,10 +79,10 @@ namespace Group4Flight.Areas.Airline.Controllers
         [HttpGet]
         public IActionResult Edit(int id)
         {
-            var flight = _context.Flights.Find(id);
+            var flight = _flightRepository.GetById(id);
             if (flight == null) return NotFound();
 
-            ViewBag.Airlines = _context.Airlines.ToList();
+            ViewBag.Airlines = _airlineRepository.GetAll().ToList();
             return View(flight);
         }
 
@@ -90,13 +98,13 @@ namespace Group4Flight.Areas.Airline.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Flights.Update(flight);
-                _context.SaveChanges();
+                _flightRepository.Update(flight);
+                _flightRepository.SaveChanges();
                 TempData["Message"] = $"Flight {flight.FlightCode} updated successfully!";
                 return RedirectToAction(nameof(Index));
             }
 
-            ViewBag.Airlines = _context.Airlines.ToList();
+            ViewBag.Airlines = _airlineRepository.GetAll().ToList();
             return View(flight);
         }
 
@@ -104,11 +112,23 @@ namespace Group4Flight.Areas.Airline.Controllers
         [HttpPost]
         public IActionResult Delete(int id)
         {
-            var flight = _context.Flights.Find(id);
+            var flight = _flightRepository.GetById(id);
             if (flight != null)
             {
-                _context.Flights.Remove(flight);
-                _context.SaveChanges();
+                // Check if this flight has any active reservations
+                var now = DateTime.Now;
+                var hasReservations = _reservationRepository.GetAll()
+                    .Any(r => r.FlightId == id && r.ExpiryDate > now);
+
+                if (hasReservations)
+                {
+                    TempData["Error"] = $"Cannot delete flight {flight.FlightCode}. " +
+                        "This flight has active reservations. Please contact the passengers first.";
+                    return RedirectToAction(nameof(Index));
+                }
+
+                _flightRepository.Delete(flight);
+                _flightRepository.SaveChanges();
                 TempData["Message"] = $"Flight {flight.FlightCode} deleted successfully!";
             }
             return RedirectToAction(nameof(Index));
@@ -136,7 +156,7 @@ namespace Group4Flight.Areas.Airline.Controllers
             var codeKey = (FlightCode ?? string.Empty).Trim().ToUpperInvariant();
             var cacheKey = $"{codeKey}|{Date:yyyy-MM-dd}";
 
-            var exists = _context.Flights.Any(f =>
+            var exists = _flightRepository.GetAll().Any(f =>
                 f.FlightCode.ToUpper() == codeKey &&
                 f.Date == Date.Date &&
                 f.FlightId != FlightId);
@@ -173,7 +193,7 @@ namespace Group4Flight.Areas.Airline.Controllers
                 return cachedResult;
             }
 
-            return !_context.Flights.Any(f =>
+            return !_flightRepository.GetAll().Any(f =>
                 f.FlightCode.ToUpper() == codeKey &&
                 f.Date == date.Date &&
                 f.FlightId != flightId);

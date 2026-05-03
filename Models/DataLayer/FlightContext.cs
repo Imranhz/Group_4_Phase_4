@@ -1,6 +1,7 @@
+using Group4Flight.Models.DomainModels;
 using Microsoft.EntityFrameworkCore;
 
-namespace Group4Flight.Models
+namespace Group4Flight.Models.DataLayer
 {
     public class FlightContext : DbContext
     {
@@ -8,6 +9,7 @@ namespace Group4Flight.Models
 
         public DbSet<Flight> Flights => Set<Flight>();
         public DbSet<Airline> Airlines => Set<Airline>();
+        public DbSet<Reservation> Reservations => Set<Reservation>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -23,6 +25,13 @@ namespace Group4Flight.Models
                 .HasConversion(
                     v => v.Ticks,
                     v => TimeSpan.FromTicks(v));
+
+            // Configure Reservation relationship
+            modelBuilder.Entity<Reservation>()
+                .HasOne(r => r.Flight)
+                .WithMany()
+                .HasForeignKey(r => r.FlightId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Seed Airlines
             modelBuilder.Entity<Airline>().HasData(

@@ -1,4 +1,5 @@
-using Group4Flight.Models;
+using Group4Flight.Models.DataLayer;
+using Group4Flight.Models.DataLayer.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +9,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<FlightContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
         ?? "Data Source=flights.db"));
+
+builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
 
 builder.Services.AddMemoryCache();
 builder.Services.AddSession(options =>

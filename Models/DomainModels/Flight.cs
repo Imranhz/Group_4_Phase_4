@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Group4Flight.Models.Validation;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Group4Flight.Models
+namespace Group4Flight.Models.DomainModels
 {
     public class Flight
     {
